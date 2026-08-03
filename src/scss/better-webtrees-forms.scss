@@ -1,0 +1,29 @@
+/**
+ * Better Webtrees Forms — estilos del popup.
+ * Reutiliza el modal de Bootstrap 5 que ya carga webtrees; aquí solo se ajusta
+ * el comportamiento del formulario inyectado dentro del modal.
+ */
+
+.bwf-modal {
+  .modal-body {
+    // El formulario de webtrees trae su propia clase de página; anulamos
+    // márgenes/anchos pensados para página completa.
+    .wt-page-content {
+      margin: 0;
+      max-width: none;
+    }
+
+    // Botones de acción del propio formulario (guardar / cancelar).
+    .btn-primary,
+    .btn-secondary {
+      margin-top: 0.5rem;
+    }
+  }
+
+  .bwf-loading {
+    min-height: 8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
