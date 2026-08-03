@@ -75,6 +75,26 @@ const initWidgets = (container) => {
   }
 };
 
+/**
+ * Re-ejecuta los <script> inline del fragmento inyectado. Ni innerHTML ni
+ * appendChild ejecutan los <script>, y webtrees los usa por campo para
+ * inicializar widgets. Crítico para las notas (`NoteStructure::edit()` pinta un
+ * <textarea> y un <select> con el mismo name="values[]" y un script inline que
+ * deshabilita el <select>); sin ese script se envían AMBOS y los conteos de
+ * levels/tags/values no cuadran → el *Action revienta con un assert (HTTP 500).
+ * De paso reactiva otros init inline (p.ej. el calendario de fechas).
+ */
+const runInlineScripts = (container) => {
+  container.querySelectorAll('script').forEach((old) => {
+    const script = document.createElement('script');
+    Array.from(old.attributes).forEach((attr) => {
+      script.setAttribute(attr.name, attr.value);
+    });
+    script.textContent = old.textContent;
+    old.parentNode.replaceChild(script, old);
+  });
+};
+
 const getModal = () => window.bootstrap.Modal.getOrCreateInstance(modalEl);
 
 const showLoading = () => {
@@ -162,6 +182,9 @@ const openForm = async (url) => {
     bodyEl.innerHTML = '';
     bodyEl.appendChild(form);
     initWidgets(bodyEl);
+    // Después de initWidgets: algún script inline (p.ej. el toggle de nota
+    // compartida) llama a `.tomselect.disable()` y necesita el widget ya creado.
+    runInlineScripts(bodyEl);
 
     const firstField = bodyEl.querySelector('input:not([type="hidden"]), select, textarea');
     if (firstField !== null) {

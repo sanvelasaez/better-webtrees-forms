@@ -26,7 +26,14 @@ cliente (`src/js/better-webtrees-forms.js`):
 2. **Abrir** (`openForm`): `fetch` de la URL → `DOMParser` → se extrae el primer
    `form[method="post"]` dentro de `#content` (los handlers `*Page` devuelven la página
    completa, así que el fragmento se extrae en cliente) → se inyecta en el modal
-   Bootstrap `#bwf-modal` → se reinicializan los widgets (`webtrees.initializeTomSelect`).
+   Bootstrap `#bwf-modal` → se reinicializan los widgets (`webtrees.initializeTomSelect`)
+   → **se re-ejecutan los `<script>` inline** del fragmento (`runInlineScripts`). Esto
+   último es crítico: `appendChild`/`innerHTML` no ejecutan los `<script>`, y webtrees
+   los usa por campo para inicializar widgets. En particular, los campos **NOTE**
+   (`NoteStructure::edit()`) pintan un `<textarea>` y un `<select>` con el mismo
+   `name="values[]"` y un script inline deshabilita el `<select>`; sin ejecutarlo se
+   enviarían AMBOS y los conteos `levels`/`tags`/`values` no cuadran → el `*Action`
+   revienta con un `assert` (HTTP 500). También reactiva el calendario de fechas.
 3. **Guardar** (`submitForm`): se intercepta el `submit`, se hace `fetch` POST con
    `new FormData(form, submitter)` (incluye el botón pulsado y el `csrf_field()` oculto).
    Los handlers `*Action` responden con `redirect()` 302; `fetch` lo sigue. Si
@@ -132,10 +139,10 @@ better-webtrees-forms/
 
 - **Alcance**: formularios de individuo (editar/añadir hecho; añadir hijo/cónyuge/padre;
   editar registro). `FORM_ROUTE_SEGMENTS` está listo para ampliar a familias/fuentes/notas.
-- **Widgets avanzados**: se reinicializa tom-select. El popup de calendario y CKEditor, que
-  webtrees inicializa con `<script>` inline (no se ejecutan al inyectar por `innerHTML`), no
-  están reactivados: los campos de fecha funcionan como texto plano. Ampliar `initWidgets()`
-  si se necesitan.
+- **Widgets avanzados**: se reinicializa tom-select y se re-ejecutan los `<script>` inline
+  del fragmento (`runInlineScripts`), lo que reactiva el toggle de nota compartida y el
+  calendario de fechas. CKEditor (editor enriquecido), si aparece, puede requerir init
+  adicional en `initWidgets()`.
 - **Errores de validación**: estos `*Action` de individuo siempre redirigen; los mensajes de
   error se muestran vía FlashMessages tras la recarga, no dentro del popup.
 - No se empaquetan jQuery/Bootstrap/tom-select: se reutilizan los que webtrees ya carga.
