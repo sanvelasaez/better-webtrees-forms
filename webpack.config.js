@@ -22,6 +22,7 @@ module.exports = (env = {}) => {
     copyPatterns.push(
       { from: 'module.php',                    to: path.resolve(__dirname, 'dist/module.php') },
       { from: 'BetterWebtreesFormsModule.php', to: path.resolve(__dirname, 'dist/BetterWebtreesFormsModule.php') },
+      { from: 'src/php',                        to: path.resolve(__dirname, 'dist/src/php') },
     );
   } else if (target === 'local') {
     outputPath = LOCAL_OUTPUT;
@@ -30,6 +31,7 @@ module.exports = (env = {}) => {
     copyPatterns.push(
       { from: 'module.php',                    to: `${DEV_MODULE}/module.php`, force: true },
       { from: 'BetterWebtreesFormsModule.php', to: `${DEV_MODULE}/BetterWebtreesFormsModule.php`, force: true },
+      { from: 'src/php',                        to: `${DEV_MODULE}/src/php`, force: true },
     );
   }
 

@@ -11,7 +11,14 @@
       "mcp__playwright__browser_find",
       "mcp__playwright__browser_run_code_unsafe",
       "mcp__playwright__browser_network_requests",
-      "mcp__playwright__browser_network_request"
+      "mcp__playwright__browser_network_request",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_hover",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_tabs",
+      "Bash(echo \"---exit $?---\")",
+      "Bash(echo \"exit $?\")",
+      "Bash(cd *)"
     ]
   },
   "enabledMcpjsonServers": [

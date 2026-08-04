@@ -1,7 +1,10 @@
 /**
- * Better Webtrees Forms — estilos del popup.
- * Reutiliza el modal de Bootstrap 5 que ya carga webtrees; aquí solo se ajusta
- * el comportamiento del formulario inyectado dentro del modal.
+ * Better Webtrees Forms — estilos del popup y del toast.
+ *
+ * THEME-AGNÓSTICO: se apoya solo en Bootstrap 5 (que TODOS los temas de webtrees
+ * cargan) y en sus variables `--bs-*` para colores/bordes, en vez de valores
+ * atados a un tema concreto (kripton). Scope estricto en `.bwf-*` para no filtrar
+ * estilos al resto de la página.
  */
 
 .bwf-modal {
@@ -25,5 +28,51 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Toast de guardado en segundo plano (esquina inferior derecha)
+// ---------------------------------------------------------------------------
+
+.bwf-toast-container {
+  // Por encima del modal-backdrop (1050) por si coincide con un modal abierto.
+  z-index: 1090;
+}
+
+.bwf-toast {
+  // Colores derivados de las variables del tema activo (cualquier tema Bootstrap
+  // define estas `--bs-*`), así el toast combina con el tema instalado.
+  --bwf-fg: var(--bs-white, #fff);
+
+  color: var(--bwf-fg);
+  background-color: var(--bs-secondary, #6c757d);
+
+  .btn-close {
+    // btn-close blanco sin depender de la clase utilitaria `.btn-close-white`.
+    filter: invert(1) grayscale(100%) brightness(200%);
+  }
+
+  &.bwf-toast--loading {
+    background-color: var(--bs-primary, #0d6efd);
+  }
+
+  &.bwf-toast--success {
+    background-color: var(--bs-success, #198754);
+  }
+
+  &.bwf-toast--danger {
+    background-color: var(--bs-danger, #dc3545);
+  }
+
+  &.bwf-toast--pending {
+    // Aviso: fondo cálido con texto oscuro para contraste sobre amarillo.
+    --bwf-fg: var(--bs-dark, #212529);
+
+    background-color: var(--bs-warning, #ffc107);
+
+    .btn-close {
+      filter: none;
+    }
   }
 }

@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 namespace BetterWebtreesForms;
 
+use BetterWebtreesForms\RequestHandlers\AddChildToIndividualFragment;
+use BetterWebtreesForms\RequestHandlers\AddFactFragment;
+use BetterWebtreesForms\RequestHandlers\AddParentToIndividualFragment;
+use BetterWebtreesForms\RequestHandlers\AddSpouseToIndividualFragment;
+use BetterWebtreesForms\RequestHandlers\EditFactFragment;
+use BetterWebtreesForms\RequestHandlers\EditRecordFragment;
+use Fisharebest\Webtrees\Http\Middleware\AuthEditor;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleCustomInterface;
 use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
+use Fisharebest\Webtrees\Registry;
 
 use function e;
 
@@ -31,6 +39,32 @@ final class BetterWebtreesFormsModule extends AbstractModule implements
     public const CUSTOM_TITLE   = 'Better Webtrees Forms';
     public const CUSTOM_AUTHOR  = 'sanvelas';
     public const CUSTOM_VERSION = '1.0.0';
+
+    /**
+     * Registra rutas GET "gemelas" de los endpoints de formulario de core, pero
+     * con prefijo `bwf-` y renderizadas con `layouts/ajax` (solo el fragmento del
+     * <form>, sin el chrome del layout → mucho más rápido). El POST de guardado
+     * sigue yendo a los *Action de core (lo pone la propia vista). boot() lo
+     * invoca webtrees en cada ModuleCustomInterface.
+     */
+    public function boot(): void
+    {
+        $route_map = Registry::routeFactory()->routeMap();
+
+        $routes = [
+            [EditFactFragment::class, '/tree/{tree}/bwf-edit-fact/{xref}/{fact_id}'],
+            [AddFactFragment::class, '/tree/{tree}/bwf-add-fact/{xref}/{fact}'],
+            [EditRecordFragment::class, '/tree/{tree}/bwf-edit-record/{xref}'],
+            [AddChildToIndividualFragment::class, '/tree/{tree}/bwf-add-child-to-individual/{xref}'],
+            [AddParentToIndividualFragment::class, '/tree/{tree}/bwf-add-parent-to-individual/{xref}/{sex}'],
+            [AddSpouseToIndividualFragment::class, '/tree/{tree}/bwf-add-spouse-to-individual/{xref}'],
+        ];
+
+        foreach ($routes as [$handler, $url]) {
+            $route_map->get($handler, $url, $handler)
+                ->extras(['middleware' => [AuthEditor::class]]);
+        }
+    }
 
     public function customModuleAuthorName(): string
     {
