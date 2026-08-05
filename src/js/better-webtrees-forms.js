@@ -354,6 +354,58 @@ const mountForm = (fragment) => {
 };
 
 /**
+ * ¿El <form> extraído es en realidad el de INICIAR SESIÓN? Ocurre cuando la
+ * sesión ha caducado: el middleware AuthEditor redirige al login y el fetch del
+ * fragmento sigue la redirección, devolviendo la página de login (que también es
+ * un `form[method="post"]`). Se detecta por el campo de contraseña o por la ruta
+ * `login` en el action.
+ */
+const isLoginForm = (form) => form !== null
+  && (form.querySelector('input[type="password"]') !== null
+    || /\blogin\b/i.test(form.getAttribute('action') || ''));
+
+/**
+ * En vez de embeber el login (esa parte aún no está pulida), el popup muestra un
+ * aviso de "sesión no iniciada" con dos botones que NAVEGAN a las páginas de
+ * login y registro de webtrees. Login GET y POST comparten ruta (`/login`), así
+ * que el `action` del form de login sirve como URL de su página; el registro se
+ * obtiene sustituyendo `login`→`register`. Ambos conservan el parámetro `url`
+ * (destino tras autenticarse). Se usan clases sin `btn-secondary` para que
+ * onDocumentClick no las trate como el "cancelar" del popup, y como no son rutas
+ * de formulario tampoco se interceptan → navegación normal del navegador.
+ */
+const mountLogin = (fragment) => {
+  const loginUrl = fragment.form.action;
+  const registerUrl = loginUrl.replace(/login/i, 'register');
+
+  titleEl.textContent = 'Sesión no iniciada';
+  bodyEl.innerHTML = '';
+
+  const notice = document.createElement('p');
+  notice.className = 'mb-3';
+  notice.textContent = 'No has iniciado sesión o tu sesión ha caducado. '
+    + 'Inicia sesión o regístrate para continuar.';
+
+  const actions = document.createElement('div');
+  actions.className = 'd-flex gap-2';
+
+  const login = document.createElement('a');
+  login.className = 'btn btn-primary';
+  login.href = loginUrl;
+  login.textContent = 'Iniciar sesión';
+
+  const register = document.createElement('a');
+  register.className = 'btn btn-outline-primary';
+  register.href = registerUrl;
+  register.textContent = 'Registrarse';
+
+  actions.appendChild(login);
+  actions.appendChild(register);
+  bodyEl.appendChild(notice);
+  bodyEl.appendChild(actions);
+};
+
+/**
  * Abre el popup: intenta el fragmento rápido (prefetcheado); si falla o no trae
  * formulario, respaldo a la ruta original de core (página completa).
  */
@@ -398,6 +450,13 @@ const openForm = async (originalHref) => {
       // página sin <form>), degradamos a navegación normal en vez de mostrar error.
       getModal().hide();
       window.location.assign(originalHref);
+      return;
+    }
+
+    // Sesión caducada: el fragmento vino a ser la página de login. Se muestra con
+    // aviso y flujo de login propio en vez de tratarlo como formulario de edición.
+    if (isLoginForm(fragment.form)) {
+      mountLogin(fragment);
       return;
     }
 
