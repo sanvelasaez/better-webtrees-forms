@@ -2,11 +2,17 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const DEV_OUTPUT  = path.resolve(__dirname, '../myfamilytree/modules_v4/better-webtrees-forms/resources');
+// El sitio en vivo corre en Docker dentro de WSL (Ubuntu): la salida de dev se
+// escribe directamente en su modules_v4 vía \\wsl.localhost. Se puede apuntar a
+// otra instalación con la variable de entorno WEBTREES_MODULES_DIR.
+const MODULES_DIR = process.env.WEBTREES_MODULES_DIR
+  || '\\\\wsl.localhost\\Ubuntu\\home\\svelascs\\webtrees\\webtree-docker\\www\\myfamilytree\\modules_v4';
+
+const DEV_OUTPUT  = path.join(MODULES_DIR, 'better-webtrees-forms', 'resources');
 const PROD_OUTPUT = path.resolve(__dirname, 'dist/resources');
 const LOCAL_OUTPUT = path.resolve(__dirname, 'resources');
 
-const DEV_MODULE = path.resolve(__dirname, '../myfamilytree/modules_v4/better-webtrees-forms');
+const DEV_MODULE = path.join(MODULES_DIR, 'better-webtrees-forms');
 
 module.exports = (env = {}) => {
   const isProd = process.env.NODE_ENV === 'production';

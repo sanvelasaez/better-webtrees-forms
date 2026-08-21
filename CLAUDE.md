@@ -102,17 +102,24 @@ Puntos de referencia en el core (solo lectura, `../myfamilytree`):
 
 ## Dónde se sirve (crítico)
 
-El sitio en vivo (`http://localhost/myfamilytree`) carga el módulo desde
-`../myfamilytree/modules_v4/better-webtrees-forms`, **no** desde este directorio fuente.
-`webpack.config.js` (target `webtrees`, el de `npm run dev`/`build`) copia ahí:
+El sitio en vivo (`http://localhost/myfamilytree`) lo sirve Docker **dentro de WSL**
+(distro `Ubuntu`), y carga el módulo desde
+`\\wsl.localhost\Ubuntu\home\svelascs\webtrees\webtree-docker\www\myfamilytree\modules_v4\better-webtrees-forms`,
+**no** desde este directorio fuente ni desde el `../myfamilytree` de Windows (que es solo
+copia de seguridad). `webpack.config.js` (target `webtrees`, el de `npm run dev`/`build`)
+escribe directamente en esa ruta UNC (constante `MODULES_DIR`, sobreescribible con la
+variable de entorno `WEBTREES_MODULES_DIR`). También se puede desplegar todo con
+`..\..\deploy-modules.ps1` desde la raíz del workspace. Copia ahí:
 - `module.php`, `BetterWebtreesFormsModule.php` y toda la carpeta `src/php/` (los handlers
   de fragmento) vía `copy-webpack-plugin`. El `require_once` de `module.php` usa rutas
   relativas a `__DIR__`, así que `src/php/` debe existir junto al `module.php` desplegado.
 - `resources/js/better-webtrees-forms.js` y `resources/css/better-webtrees-forms.css`
   (salida de webpack + MiniCssExtract).
 
-Si editas las rutas de salida en `webpack.config.js`, mantenlas apuntando a
-`myfamilytree/modules_v4/better-webtrees-forms` o los cambios no se verán.
+Si editas las rutas de salida en `webpack.config.js`, mantenlas apuntando al
+`modules_v4` de la instalación WSL (vía `MODULES_DIR`) o los cambios no se verán.
+Si el build falla con "no se puede acceder a la ruta", la distro Ubuntu no está
+disponible: arráncala con `wsl -d Ubuntu`.
 
 El módulo se autodescubre y **se habilita solo** en webtrees (aparece como
 `_better-webtrees-forms_` en `wt_module`, status `enabled`). No requiere activación manual.
